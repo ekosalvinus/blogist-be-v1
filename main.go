@@ -17,6 +17,11 @@ type Article struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type Category struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 var articles = []Article{
 	{UUID: "a1f3c9e2-7b4e-4c91-9d01-2f8d5e7a1001", Title: "Vue 3 Folder Structure for Production Projects", Author: "Daniel Carter", CreatedAt: parseTime("2026-03-02T10:00:00Z"), UpdatedAt: parseTime("2026-03-02T10:00:00Z")},
 	{UUID: "b2d4e8f1-6c3a-4f11-8b2e-3c9a7b2f1002", Title: "Composition API vs Options API (Real Use Case)", Author: "Michael Thompson", CreatedAt: parseTime("2026-03-02T10:01:00Z"), UpdatedAt: parseTime("2026-03-02T10:01:00Z")},
@@ -30,6 +35,15 @@ var articles = []Article{
 	{UUID: "3ab7c3f9-7e5a-4c61-a7da-bf8c6d3a1010", Title: "Professional Frontend Error Handling Strategy", Author: "Nathan Hughes", CreatedAt: parseTime("2026-03-02T10:09:00Z"), UpdatedAt: parseTime("2026-03-02T10:09:00Z")},
 	{UUID: "4bc8d4a1-6f7b-4d71-b8eb-c09d7e4b1011", Title: "Lazy Loading Routes in Vue for Better Performance", Author: "Lucas Bennett", CreatedAt: parseTime("2026-03-02T10:10:00Z"), UpdatedAt: parseTime("2026-03-02T10:10:00Z")},
 	{UUID: "5cd9e5b2-5a8c-4e81-c9fc-d1ae8f5c1012", Title: "Migrating Legacy Vue Projects to Vue 3: A Real Experience", Author: "Oliver Grant", CreatedAt: parseTime("2026-03-02T10:11:00Z"), UpdatedAt: parseTime("2026-03-02T10:11:00Z")},
+}
+
+var categories = []Category{
+	{ID: "cat-001-tech", Name: "technology"},
+	{ID: "cat-002-vue", Name: "vue"},
+	{ID: "cat-003-front", Name: "frontend"},
+	{ID: "cat-004-js", Name: "javascript"},
+	{ID: "cat-005-react", Name: "react"},
+	{ID: "cat-006-angular", Name: "angular"},
 }
 
 func parseTime(s string) time.Time {
@@ -113,15 +127,29 @@ func getArticlesHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Handler: GET /category (no middleware)
+func getCategoryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		jsonResponse(w, http.StatusMethodNotAllowed, map[string]string{"message": "Method not allowed"})
+		return
+	}
+	jsonResponse(w, http.StatusOK, map[string]any{
+		"message": "success",
+		"data":    categories,
+	})
+}
+
 func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/blog", corsMiddleware(getBlogHandler))
 	mux.HandleFunc("/articles", corsMiddleware(basicAuthMiddleware(getArticlesHandler)))
+	mux.HandleFunc("/category", corsMiddleware(getCategoryHandler))
 
 	println("Server running on http://localhost:8080")
 	println("  GET /blog      -> no auth required")
 	println("  GET /articles  -> Basic Auth (admin:admin123)")
+	println("  GET /category  -> no auth required")
 	log.Println("Server API in Action")
 	http.ListenAndServe(":8080", mux)
 }
