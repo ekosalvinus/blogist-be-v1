@@ -43,6 +43,26 @@ func jsonResponse(w http.ResponseWriter, statusCode int, data any) {
 	json.NewEncoder(w).Encode(data)
 }
 
+// Middleware: CORS
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Max-Age", "3600")
+
+		// Handle preflight OPTIONS request
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next(w, r)
+	}
+}
+
 // Middleware: Basic Auth
 func basicAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -96,8 +116,8 @@ func getArticlesHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/blog", getBlogHandler)
-	mux.HandleFunc("/articles", basicAuthMiddleware(getArticlesHandler))
+	mux.HandleFunc("/blog", corsMiddleware(getBlogHandler))
+	mux.HandleFunc("/articles", corsMiddleware(basicAuthMiddleware(getArticlesHandler)))
 
 	println("Server running on http://localhost:8080")
 	println("  GET /blog      -> no auth required")
