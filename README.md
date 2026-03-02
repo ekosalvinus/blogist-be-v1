@@ -2,6 +2,12 @@
 
 REST API ready to use.
 
+# How to clone
+
+```bash 
+git clone git@github.com:ekosalvinus/blogist-be-v1.git
+```
+
 ## How to Run
 
 ```bash
